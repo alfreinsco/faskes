@@ -1,0 +1,70 @@
+@import 'tailwindcss';
+@import '../fontawesome/css/all.min.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@plugin "daisyui";
+
+
+:root {
+    --primary: #0891b2;
+    --primary-content: #ffffff;
+    --secondary: #0e7490;
+    --secondary-content: #ffffff;
+    --accent: #155e75;
+    --accent-content: #ffffff;
+    --neutral: #1f2937;
+    --neutral-content: #ffffff;
+    --base-100: #ffffff;
+    --base-200: #f0f9ff;
+    --base-300: #e0f2fe;
+    --base-content: #1e293b;
+    --info: #0891b2;
+    --info-content: #ffffff;
+    --success: #10b981;
+    --success-content: #ffffff;
+    --warning: #f59e0b;
+    --warning-content: #ffffff;
+    --error: #ef4444;
+    --error-content: #ffffff;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--primary-content);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary);
+    color: var(--primary-content);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-outline.btn-primary {
+    background-color: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn-outline.btn-outline.btn-primary:hover {
+    background-color: var(--primary);
+    color: var(--primary-content);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
