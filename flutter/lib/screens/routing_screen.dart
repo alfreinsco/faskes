@@ -423,53 +423,53 @@ class _RoutingScreenState extends State<RoutingScreen> {
                     ),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.directions, color: Colors.blue[600]),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Rute ke ${widget.faskes.nama}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[800],
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: _showTransportModeDialog,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[100],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      _getTransportModeText(_transportMode),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.blue[700],
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 2),
-                                    Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 12,
-                                      color: Colors.blue[700],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   children: [
+                        //     Icon(Icons.directions, color: Colors.blue[600]),
+                        //     const SizedBox(width: 8),
+                        //     Expanded(
+                        //       child: Text(
+                        //         'Rute ke ${widget.faskes.nama}',
+                        //         style: TextStyle(
+                        //           fontWeight: FontWeight.bold,
+                        //           color: Colors.blue[800],
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     GestureDetector(
+                        //       onTap: _showTransportModeDialog,
+                        //       child: Container(
+                        //         padding: const EdgeInsets.symmetric(
+                        //           horizontal: 6,
+                        //           vertical: 2,
+                        //         ),
+                        //         decoration: BoxDecoration(
+                        //           color: Colors.blue[100],
+                        //           borderRadius: BorderRadius.circular(4),
+                        //         ),
+                        //         child: Row(
+                        //           mainAxisSize: MainAxisSize.min,
+                        //           children: [
+                        //             Text(
+                        //               _getTransportModeText(_transportMode),
+                        //               style: TextStyle(
+                        //                 fontSize: 10,
+                        //                 color: Colors.blue[700],
+                        //                 fontWeight: FontWeight.w500,
+                        //               ),
+                        //             ),
+                        //             const SizedBox(width: 2),
+                        //             Icon(
+                        //               Icons.keyboard_arrow_down,
+                        //               size: 12,
+                        //               color: Colors.blue[700],
+                        //             ),
+                        //           ],
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                         const SizedBox(height: 8),
                         Row(
                           children: [

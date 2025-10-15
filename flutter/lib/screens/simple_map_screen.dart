@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/faskes.dart';
+import 'leaflet_routing_screen.dart';
 
 class SimpleMapScreen extends StatefulWidget {
   final List<Faskes> faskesList;
@@ -25,8 +26,33 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fitBounds();
+      _focusOnCurrentLocation();
     });
+  }
+
+  void _focusOnCurrentLocation() {
+    if (widget.currentPosition != null) {
+      // Focus on current location with smooth animation
+      _mapController.move(
+        LatLng(
+          widget.currentPosition!.latitude,
+          widget.currentPosition!.longitude,
+        ),
+        15.0, // Zoom level 15 for detailed view
+      );
+
+      // Show snackbar to inform user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Memfokuskan ke lokasi Anda'),
+          backgroundColor: Colors.green[600],
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      // Fallback to fit all faskes if no current location
+      _fitBounds();
+    }
   }
 
   void _fitBounds() {
@@ -39,7 +65,7 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
           points.add(LatLng(lat, lng));
         }
       }
-      
+
       if (points.isNotEmpty) {
         final bounds = LatLngBounds.fromPoints(points);
         _mapController.fitCamera(
@@ -77,96 +103,190 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: const LatLng(-2.5489, 118.0149),
-        initialZoom: 5.0,
-        minZoom: 3.0,
-        maxZoom: 18.0,
-      ),
+    return Stack(
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.faskes',
-        ),
-        MarkerLayer(
-          markers: [
-            // Current location marker
-            if (widget.currentPosition != null)
-              Marker(
-                point: LatLng(
-                  widget.currentPosition!.latitude,
-                  widget.currentPosition!.longitude,
-                ),
-                width: 30,
-                height: 30,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green[600],
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: const LatLng(-2.5489, 118.0149),
+            initialZoom: 5.0,
+            minZoom: 3.0,
+            maxZoom: 18.0,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.faskes',
+            ),
+            MarkerLayer(
+              markers: [
+                // Current location marker
+                if (widget.currentPosition != null)
+                  Marker(
+                    point: LatLng(
+                      widget.currentPosition!.latitude,
+                      widget.currentPosition!.longitude,
+                    ),
+                    width: 30,
+                    height: 30,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green[600],
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.my_location,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ),
-            // Faskes markers
-            ...widget.faskesList.where((faskes) => 
-              faskes.latitude != null && faskes.longitude != null
-            ).map((faskes) {
-              final lat = double.parse(faskes.latitude!);
-              final lng = double.parse(faskes.longitude!);
-              
-              return Marker(
-                point: LatLng(lat, lng),
-                width: 40,
-                height: 40,
-                child: GestureDetector(
-                  onTap: () {
-                    _showFaskesDialog(faskes);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _getMarkerColor(faskes.type),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        _getTypeIcon(faskes.type),
-                        style: const TextStyle(
-                          fontSize: 16,
+                      child: const Center(
+                        child: Icon(
+                          Icons.my_location,
                           color: Colors.white,
+                          size: 16,
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-            }).toList(),
+                // Faskes markers
+                ...widget.faskesList
+                    .where(
+                      (faskes) =>
+                          faskes.latitude != null && faskes.longitude != null,
+                    )
+                    .map((faskes) {
+                      final lat = double.parse(faskes.latitude!);
+                      final lng = double.parse(faskes.longitude!);
+
+                      return Marker(
+                        point: LatLng(lat, lng),
+                        width: 40,
+                        height: 40,
+                        child: GestureDetector(
+                          onTap: () {
+                            _showFaskesDialog(faskes);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: _getMarkerColor(faskes.type),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                _getTypeIcon(faskes.type),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    })
+                    .toList(),
+              ],
+            ),
           ],
         ),
+        // Floating action buttons
+        Positioned(
+          bottom: 20,
+          right: 20,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // My Location button
+              if (widget.currentPosition != null)
+                FloatingActionButton(
+                  onPressed: _focusOnCurrentLocation,
+                  backgroundColor: Colors.green[600],
+                  child: const Icon(Icons.my_location, color: Colors.white),
+                  heroTag: "my_location",
+                ),
+              const SizedBox(height: 10),
+              // Route button
+              FloatingActionButton.extended(
+                onPressed: () {
+                  if (widget.faskesList.isNotEmpty) {
+                    _showFaskesListDialog();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tidak ada faskes yang tersedia'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.directions, color: Colors.white),
+                label: const Text(
+                  'Rute',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                backgroundColor: Colors.blue[600],
+                elevation: 8,
+                heroTag: "route",
+              ),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  void _showFaskesListDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pilih Faskes untuk Rute'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: widget.faskesList.length,
+            itemBuilder: (context, index) {
+              final faskes = widget.faskesList[index];
+              return ListTile(
+                leading: Text(
+                  faskes.typeIcon,
+                  style: const TextStyle(fontSize: 20),
+                ),
+                title: Text(
+                  faskes.nama,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(faskes.type),
+                trailing: Icon(Icons.directions, color: Colors.blue[600]),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showRoute(faskes);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -179,10 +299,7 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
             Text(faskes.typeIcon, style: const TextStyle(fontSize: 24)),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                faskes.nama,
-                style: const TextStyle(fontSize: 18),
-              ),
+              child: Text(faskes.nama, style: const TextStyle(fontSize: 18)),
             ),
           ],
         ),
@@ -199,10 +316,7 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              faskes.alamat,
-              style: const TextStyle(fontSize: 14),
-            ),
+            Text(faskes.alamat, style: const TextStyle(fontSize: 14)),
             if (faskes.noTelp != null) ...[
               const SizedBox(height: 8),
               Row(
@@ -220,7 +334,45 @@ class _SimpleMapScreenState extends State<SimpleMapScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Tutup'),
           ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _showRoute(faskes);
+            },
+            icon: const Icon(Icons.directions, size: 16),
+            label: const Text('Rute'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showRoute(Faskes faskes) async {
+    if (widget.currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tidak dapat mengakses lokasi saat ini. Pastikan GPS aktif dan izin lokasi diberikan.',
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // Navigate to Leaflet routing screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LeafletRoutingScreen(
+          faskes: faskes,
+          currentPosition: widget.currentPosition!,
+        ),
       ),
     );
   }

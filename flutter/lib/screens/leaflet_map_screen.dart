@@ -162,6 +162,7 @@ class _LeafletMapScreenState extends State<LeafletMapScreen> {
             
             // Create routing control
             routingControl = L.Routing.control({
+                show: false,
                 waypoints: [
                     L.latLng(currentPos[0], currentPos[1]),
                     L.latLng(destination[0], destination[1])

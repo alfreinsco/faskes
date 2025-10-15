@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -20,10 +21,12 @@ class LeafletRoutingScreen extends StatefulWidget {
 class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
   late WebViewController _controller;
   bool _isLoading = true;
+  Position? _currentPosition;
 
   @override
   void initState() {
     super.initState();
+    _currentPosition = widget.currentPosition;
     _initializeWebView();
   }
 
@@ -37,6 +40,7 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
               _isLoading = false;
             });
             _loadRouteData();
+            _setupJavaScriptChannels();
           },
           onWebResourceError: (WebResourceError error) {
             print('WebView error: ${error.description}');
@@ -49,9 +53,56 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
       ..loadHtmlString(_generateRoutingHTML());
   }
 
+  void _setupJavaScriptChannels() {
+    // Add JavaScript channel for location updates
+    _controller.addJavaScriptChannel(
+      'FlutterMethodChannel',
+      onMessageReceived: (JavaScriptMessage message) {
+        try {
+          final data = jsonDecode(message.message);
+          if (data['type'] == 'requestLocationUpdate') {
+            _updateLocationAndRoute();
+          }
+        } catch (e) {
+          print('Error parsing JavaScript message: $e');
+        }
+      },
+    );
+  }
+
+  Future<void> _updateLocationAndRoute() async {
+    try {
+      // Get current location
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+
+      // Update the WebView with new location
+      await _controller.runJavaScript('''
+        updateRouteWithNewLocation(${position.latitude}, ${position.longitude});
+      ''');
+
+      // Update Flutter state
+      setState(() {
+        _currentPosition = position;
+      });
+    } catch (e) {
+      print('Error updating location: $e');
+      // If location update fails, use the last known position
+      if (_currentPosition != null) {
+        await _controller.runJavaScript('''
+          updateRouteWithNewLocation(${_currentPosition!.latitude}, ${_currentPosition!.longitude});
+        ''');
+      }
+    }
+  }
+
   void _loadRouteData() {
-    final startLat = widget.currentPosition.latitude;
-    final startLng = widget.currentPosition.longitude;
+    if (_currentPosition == null) return;
+
+    final startLat = _currentPosition!.latitude;
+    final startLng = _currentPosition!.longitude;
     final endLat = double.parse(widget.faskes.latitude!);
     final endLng = double.parse(widget.faskes.longitude!);
 
@@ -162,30 +213,14 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
         body { margin: 0; padding: 0; }
         #map { height: 100vh; width: 100%; }
         .leaflet-routing-container { 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin: 10px;
+            display: none !important;
         }
         .leaflet-routing-alt { 
-            max-height: 200px; 
-            overflow-y: auto; 
+            display: none !important;
         }
         .custom-div-icon {
             background: transparent !important;
             border: none !important;
-        }
-        .route-info {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: none;
         }
         .transport-mode {
             position: absolute;
@@ -211,35 +246,7 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
 <body>
     <div id="map"></div>
     
-    <div class="route-info" id="routeInfo">
-        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 20px;">${widget.faskes.typeIcon}</span>
-            <div style="margin-left: 8px; flex: 1;">
-                <div style="font-weight: bold; font-size: 16px;">Rute ke ${widget.faskes.nama}</div>
-                <div style="color: ${_getMarkerColor(widget.faskes.type)}; font-weight: 500;">${widget.faskes.type}</div>
-            </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 12px; color: #666;">Jarak</div>
-                <div id="distance" style="font-weight: bold; color: #1976d2;">-</div>
-            </div>
-            <div>
-                <div style="font-size: 12px; color: #666;">Waktu</div>
-                <div id="duration" style="font-weight: bold; color: #1976d2;">-</div>
-            </div>
-            <div>
-                <div style="font-size: 12px; color: #666;">Mode</div>
-                <div id="mode" style="font-weight: bold; color: #1976d2;">Mobil</div>
-            </div>
-        </div>
-    </div>
     
-    <div class="transport-mode">
-        <button class="mode-btn active" onclick="changeMode('driving-car')">🚗</button>
-        <button class="mode-btn" onclick="changeMode('walking')">🚶</button>
-        <button class="mode-btn" onclick="changeMode('cycling-regular')">🚴</button>
-    </div>
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
@@ -257,12 +264,6 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
         var routingControl = null;
         var currentMode = 'driving-car';
         
-        // Function to update route info
-        function updateRouteInfo(distance, duration) {
-            document.getElementById('distance').textContent = distance + ' km';
-            document.getElementById('duration').textContent = duration + ' menit';
-            document.getElementById('routeInfo').style.display = 'block';
-        }
         
         // Function to change transport mode
         function changeMode(mode) {
@@ -272,14 +273,6 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
-            // Update mode display
-            var modeText = '';
-            switch(mode) {
-                case 'driving-car': modeText = 'Mobil'; break;
-                case 'walking': modeText = 'Jalan Kaki'; break;
-                case 'cycling-regular': modeText = 'Sepeda'; break;
-            }
-            document.getElementById('mode').textContent = modeText;
             
             // Recalculate route
             if (routingControl) {
@@ -338,7 +331,7 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
                 lineOptions: {
                     styles: [{ color: '#1976d2', weight: 5, opacity: 0.8 }]
                 },
-                show: true,
+                show: false,
                 addWaypoints: false,
                 routeWhileDragging: false,
                 fitSelectedRoutes: true,
@@ -353,7 +346,7 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
                 var distance = Math.round(summary.totalDistance / 1000 * 10) / 10;
                 var duration = Math.round(summary.totalTime / 60);
                 
-                updateRouteInfo(distance, duration);
+                // Route found, no need to show info popup
             });
             
             routingControl.on('routingerror', function(e) {
@@ -371,19 +364,51 @@ class _LeafletRoutingScreenState extends State<LeafletRoutingScreen> {
             var distance = startPoint.distanceTo(endPoint) / 1000;
             var duration = Math.round(distance * 2); // Rough estimate
             
-            // Draw straight line
-            L.polyline([startPoint, endPoint], {
-                color: '#1976d2',
-                weight: 5,
-                opacity: 0.8,
-                dashArray: '10, 10'
-            }).addTo(map);
+            // No fallback line drawn - only show markers
+            // Fallback route shown, no need to display info
+        }
+
+        // Function to update location and route every 3 seconds
+        function startLocationUpdate() {
+            setInterval(function() {
+                // Get current location from Flutter
+                if (window.FlutterMethodChannel) {
+                    window.FlutterMethodChannel.postMessage(JSON.stringify({
+                        type: 'requestLocationUpdate'
+                    }));
+                }
+            }, 3000); // Update every 3 seconds
+        }
+
+        // Function to update route with new location
+        function updateRouteWithNewLocation(newLat, newLng) {
+            var startPoint = L.latLng(newLat, newLng);
+            var endPoint = L.latLng(${double.parse(widget.faskes.latitude!)}, ${double.parse(widget.faskes.longitude!)});
             
-            updateRouteInfo(distance.toFixed(1), duration);
+            // Update waypoints
+            routingControl.setWaypoints([startPoint, endPoint]);
+            
+            // Recalculate route
+            routingControl.route();
+            
+            // Update current position marker
+            if (currentPositionMarker) {
+                map.removeLayer(currentPositionMarker);
+            }
+            currentPositionMarker = L.marker([newLat, newLng], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: "<div style='background-color: #4CAF50; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px rgba(0,0,0,0.3);'></div>",
+                    iconSize: [20, 20]
+                })
+            }).addTo(map).bindPopup("Lokasi Anda");
         }
         
         // Initialize routing control
         createRoutingControl();
+        
+        // Start location update every 3 seconds
+        startLocationUpdate();
     </script>
 </body>
 </html>
