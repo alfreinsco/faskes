@@ -1,11 +1,11 @@
 {
-    "name": "faskes",
-    "short_name": "faskes",
+    "name": "FASKES - Fasilitas Kesehatan",
+    "short_name": "FASKES",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Aplikasi mobile untuk menampilkan data fasilitas kesehatan",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
