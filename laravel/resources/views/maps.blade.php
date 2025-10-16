@@ -106,8 +106,8 @@
             if (navigator.geolocation) {
                 const options = {
                     enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 30000 // 30 seconds for more frequent updates
+                    timeout: 10000,
+                    maximumAge: 5000 // 5 seconds for more frequent updates
                 };
 
                 navigator.geolocation.getCurrentPosition(
@@ -160,8 +160,8 @@
                         console.log('Watch position error:', error);
                     }, {
                         enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 10000 // 10 seconds for real-time updates
+                        timeout: 5000,
+                        maximumAge: 3000 // 3 seconds for real-time updates
                     }
                 );
             } else {
@@ -184,7 +184,7 @@
                 Math.abs(currentLocation.lat - location.lat) > 0.0001 ||
                 Math.abs(currentLocation.lng - location.lng) > 0.0001 ||
                 !lastLocationUpdate ||
-                (now - lastLocationUpdate) > 5000) { // Update at least every 5 seconds
+                (now - lastLocationUpdate) > 2000) { // Update at least every 2 seconds
 
                 currentLocation = {
                     lat: location.lat,
@@ -469,7 +469,7 @@
             updateURLState();
         });
 
-        // Add periodic location refresh (every 30 seconds)
+        // Add periodic location refresh (every 3 seconds)
         setInterval(function() {
             if (navigator.geolocation && currentLocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -484,12 +484,12 @@
                         console.log('Periodic location update failed:', error);
                     }, {
                         enableHighAccuracy: true,
-                        timeout: 5000,
-                        maximumAge: 60000 // 1 minute
+                        timeout: 3000,
+                        maximumAge: 5000 // 5 seconds
                     }
                 );
             }
-        }, 30000); // Update every 30 seconds
+        }, 3000); // Update every 3 seconds
 
         // Function to create route
         function createRoute(destination, closePopup = false) {
