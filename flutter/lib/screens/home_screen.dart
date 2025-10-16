@@ -5,7 +5,7 @@ import '../widgets/faskes_card.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/filter_chips.dart';
 import '../widgets/stats_card.dart';
-import 'map_screen.dart';
+import 'webview_maps_screen.dart';
 import 'faskes_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -58,7 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MapScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const WebViewMapsScreen(),
+                ),
               );
             },
           ),

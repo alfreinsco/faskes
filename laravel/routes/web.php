@@ -8,12 +8,17 @@ use App\Http\Controllers\ApotekController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MapsController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root to dashboard
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+Route::get('/maps', [MapsController::class, 'index'])->name('maps');
+Route::get('/api/facilities', [MapsController::class, 'getFacilities'])->name('api.facilities');
+Route::get('/api/facilities/{id}', [MapsController::class, 'getFacilityDetails'])->name('api.facility.details');
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {

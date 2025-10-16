@@ -14,7 +14,7 @@ class LocationPermissionWidget extends StatefulWidget {
 class _LocationPermissionWidgetState extends State<LocationPermissionWidget> {
   bool _isCheckingPermission = true;
   bool _hasPermission = false;
-  String _permissionStatus = '';
+  String _errorMessage = '';
 
   @override
   void initState() {
@@ -24,31 +24,35 @@ class _LocationPermissionWidgetState extends State<LocationPermissionWidget> {
 
   Future<void> _checkLocationPermission() async {
     try {
+      // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
           _isCheckingPermission = false;
           _hasPermission = false;
-          _permissionStatus = 'Layanan lokasi tidak aktif';
+          _errorMessage =
+              'Layanan lokasi tidak aktif. Silakan aktifkan di pengaturan perangkat.';
         });
         return;
       }
 
+      // Check current permission status
       LocationPermission permission = await Geolocator.checkPermission();
+
       setState(() {
         _isCheckingPermission = false;
         _hasPermission =
             permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always;
-        _permissionStatus = _hasPermission
-            ? 'Izin lokasi diberikan'
-            : 'Izin lokasi diperlukan';
+        _errorMessage = _hasPermission
+            ? ''
+            : 'Izin lokasi diperlukan untuk menampilkan peta dan rute.';
       });
     } catch (e) {
       setState(() {
         _isCheckingPermission = false;
         _hasPermission = false;
-        _permissionStatus = 'Error: $e';
+        _errorMessage = 'Error memeriksa izin lokasi: $e';
       });
     }
   }
@@ -56,23 +60,51 @@ class _LocationPermissionWidgetState extends State<LocationPermissionWidget> {
   Future<void> _requestLocationPermission() async {
     try {
       LocationPermission permission = await Geolocator.requestPermission();
+
       setState(() {
         _hasPermission =
             permission == LocationPermission.whileInUse ||
             permission == LocationPermission.always;
-        _permissionStatus = _hasPermission
-            ? 'Izin lokasi diberikan'
-            : 'Izin lokasi ditolak';
+        _errorMessage = _hasPermission ? '' : 'Izin lokasi ditolak.';
       });
+
+      if (!_hasPermission) {
+        // Show dialog to open app settings
+        _showSettingsDialog();
+      }
     } catch (e) {
       setState(() {
-        _permissionStatus = 'Error: $e';
+        _errorMessage = 'Error meminta izin lokasi: $e';
       });
     }
   }
 
-  Future<void> _openAppSettings() async {
-    await Geolocator.openAppSettings();
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Izin Lokasi Diperlukan'),
+          content: const Text(
+            'Aplikasi memerlukan akses lokasi untuk menampilkan peta dan rute. '
+            'Silakan aktifkan izin lokasi di pengaturan aplikasi.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tutup'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Geolocator.openAppSettings();
+              },
+              child: const Text('Buka Pengaturan'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -97,93 +129,138 @@ class _LocationPermissionWidgetState extends State<LocationPermissionWidget> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_on, size: 80, color: Colors.cyan[600]),
-            const SizedBox(height: 24),
-            Text(
-              'Izin Akses Lokasi',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.cyan[600],
+            // Icon
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.blue[200]!, width: 2),
               ),
+              child: Icon(Icons.location_on, size: 60, color: Colors.blue[600]),
             ),
-            const SizedBox(height: 16),
+
+            const SizedBox(height: 32),
+
+            // Title
             Text(
-              'Aplikasi memerlukan akses lokasi untuk:',
-              style: Theme.of(context).textTheme.bodyLarge,
+              'Akses Lokasi Diperlukan',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
               textAlign: TextAlign.center,
             ),
+
             const SizedBox(height: 16),
-            const Column(
+
+            // Description
+            Text(
+              _errorMessage.isNotEmpty
+                  ? _errorMessage
+                  : 'Aplikasi memerlukan akses lokasi untuk:',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: _errorMessage.isNotEmpty
+                    ? Colors.red[600]
+                    : Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Features list
+            Column(
               children: [
-                _PermissionItem(
+                _PermissionFeature(
                   icon: Icons.map,
-                  text: 'Menampilkan faskes di peta',
+                  title: 'Menampilkan Peta',
+                  description:
+                      'Menampilkan fasilitas kesehatan di peta interaktif',
                 ),
-                _PermissionItem(
+                const SizedBox(height: 16),
+                _PermissionFeature(
                   icon: Icons.directions,
-                  text: 'Memberikan rute ke faskes',
+                  title: 'Navigasi Rute',
+                  description: 'Memberikan rute dari lokasi Anda ke fasilitas',
                 ),
-                _PermissionItem(
+                const SizedBox(height: 16),
+                _PermissionFeature(
                   icon: Icons.my_location,
-                  text: 'Menampilkan lokasi Anda saat ini',
+                  title: 'Lokasi Real-time',
+                  description: 'Menampilkan posisi Anda saat ini di peta',
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            if (_permissionStatus.contains('ditolak'))
-              Column(
-                children: [
-                  Text(
-                    'Izin lokasi ditolak. Silakan aktifkan di pengaturan aplikasi.',
-                    style: TextStyle(
-                      color: Colors.red[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: _openAppSettings,
-                    icon: const Icon(Icons.settings),
-                    label: const Text('Buka Pengaturan'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[600],
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            else
-              ElevatedButton.icon(
+
+            const SizedBox(height: 40),
+
+            // Allow button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
                 onPressed: _requestLocationPermission,
-                icon: const Icon(Icons.location_on),
-                label: const Text('Berikan Izin Lokasi'),
+                icon: const Icon(Icons.location_on, size: 24),
+                label: const Text(
+                  'Izinkan Akses Lokasi',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan[600],
+                  backgroundColor: Colors.blue[600],
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
+            ),
+
             const SizedBox(height: 16),
+
+            // Skip button
             TextButton(
               onPressed: () {
                 setState(() {
-                  _hasPermission = true; // Skip permission for now
+                  _hasPermission = true;
                 });
               },
-              child: const Text('Lewati untuk sementara'),
+              child: Text(
+                'Lewati untuk sementara',
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Privacy note
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue[600], size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Lokasi Anda tidak akan disimpan atau dibagikan dengan pihak ketiga.',
+                      style: TextStyle(color: Colors.blue[700], fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -192,25 +269,51 @@ class _LocationPermissionWidgetState extends State<LocationPermissionWidget> {
   }
 }
 
-class _PermissionItem extends StatelessWidget {
+class _PermissionFeature extends StatelessWidget {
   final IconData icon;
-  final String text;
+  final String title;
+  final String description;
 
-  const _PermissionItem({required this.icon, required this.text});
+  const _PermissionFeature({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.cyan[600], size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.blue[100],
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
+          child: Icon(icon, color: Colors.blue[600], size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

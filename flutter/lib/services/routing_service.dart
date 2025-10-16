@@ -1,6 +1,59 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
+
+// Simple LatLng class to replace latlong2 dependency
+class LatLng {
+  final double latitude;
+  final double longitude;
+
+  LatLng(this.latitude, this.longitude);
+
+  @override
+  String toString() => 'LatLng($latitude, $longitude)';
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LatLng &&
+          runtimeType == other.runtimeType &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
+
+  @override
+  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+}
+
+// Simple distance calculation
+class Distance {
+  double as(LengthUnit unit, LatLng from, LatLng to) {
+    const double earthRadius = 6371000; // Earth radius in meters
+
+    final lat1Rad = from.latitude * (pi / 180);
+    final lat2Rad = to.latitude * (pi / 180);
+    final deltaLatRad = (to.latitude - from.latitude) * (pi / 180);
+    final deltaLngRad = (to.longitude - from.longitude) * (pi / 180);
+
+    final a =
+        sin(deltaLatRad / 2) * sin(deltaLatRad / 2) +
+        cos(lat1Rad) *
+            cos(lat2Rad) *
+            sin(deltaLngRad / 2) *
+            sin(deltaLngRad / 2);
+    final c = 2 * asin(sqrt(a));
+
+    final distance = earthRadius * c;
+
+    switch (unit) {
+      case LengthUnit.Meter:
+        return distance;
+      case LengthUnit.Kilometer:
+        return distance / 1000;
+    }
+  }
+}
+
+enum LengthUnit { Meter, Kilometer }
 
 class RoutingService {
   // Using OpenRouteService API (free tier available)
@@ -152,7 +205,7 @@ class RoutingService {
     required LatLng end,
     String profile = 'driving-car',
   }) {
-    final distance = const Distance().as(LengthUnit.Meter, start, end);
+    final distance = Distance().as(LengthUnit.Meter, start, end);
 
     // Add some intermediate points to make the route look more realistic
     final points = _generateIntermediatePoints(start, end, 5);
