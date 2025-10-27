@@ -81,7 +81,7 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
             map.setView([currentLocation.lat, currentLocation.lng], 15);
             
             // Add current location marker with same design as maps.blade.php
-            L.marker([currentLocation.lat, currentLocation.lng], {
+            currentLocationMarker = L.marker([currentLocation.lat, currentLocation.lng], {
               icon: L.divIcon({
                 className: 'current-location-marker',
                 html: `
@@ -201,13 +201,17 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
           }
         }
         
+        // Global variables to track markers and routing
+        var currentLocationMarker = null;
+        var routingControl = null;
+        
         // Set up continuous location updates every 3 seconds
         function startLocationWatch() {
           if (navigator.geolocation) {
             const options = {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 3000 // 3 seconds for real-time updates
+              enableHighAccuracy: false, // Reduced accuracy for better reliability
+              timeout: 10000, // Increased timeout
+              maximumAge: 10000 // 10 seconds for more stable updates
             };
             
             navigator.geolocation.watchPosition(
@@ -223,30 +227,37 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
                   
                   // Update location marker with new position
                   updateLocationMarker();
+                  
+                  // Update route if active
+                  updateActiveRoute();
                 }
               },
               function(error) {
-                console.log('Watch position error:', error);
+                console.log('Watch position error:', error.code, error.message);
+                // If geolocation fails due to security (HTTP), disable watch and rely on Flutter updates
+                if (error.code === 1) {
+                  console.log('Geolocation disabled due to security restrictions. Relying on Flutter updates only.');
+                  return;
+                }
               },
               options
             );
+          } else {
+            console.log('Geolocation not supported. Relying on Flutter updates only.');
           }
         }
         
         // Function to update location marker
         function updateLocationMarker() {
           if (typeof map !== 'undefined' && typeof currentLocation !== 'undefined') {
-            // Remove existing location marker
-            map.eachLayer(function(layer) {
-              if (layer instanceof L.Marker && layer.options.icon && 
-                  layer.options.icon.options && 
-                  layer.options.icon.options.className === 'current-location-marker') {
-                map.removeLayer(layer);
-              }
-            });
+            // Remove existing location marker if it exists
+            if (currentLocationMarker) {
+              map.removeLayer(currentLocationMarker);
+              currentLocationMarker = null;
+            }
             
             // Add new location marker with same design
-            L.marker([currentLocation.lat, currentLocation.lng], {
+            currentLocationMarker = L.marker([currentLocation.lat, currentLocation.lng], {
               icon: L.divIcon({
                 className: 'current-location-marker',
                 html: `
@@ -362,10 +373,47 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
           }
         }
         
+        // Function to update active route with new location
+        function updateActiveRoute() {
+          if (routingControl && typeof currentLocation !== 'undefined') {
+            // Get the destination from the existing route
+            var waypoints = routingControl.getWaypoints();
+            if (waypoints && waypoints.length >= 2) {
+              var destination = waypoints[1];
+              
+              // Remove existing routing control
+              map.removeControl(routingControl);
+              
+              // Create new routing control with updated start point
+              routingControl = L.Routing.control({
+                waypoints: [
+                  L.latLng(currentLocation.lat, currentLocation.lng),
+                  destination
+                ],
+                show: false,
+                collapsible: true,
+                routeWhileDragging: true,
+                addWaypoints: false,
+                createMarker: function() {
+                  return null;
+                },
+                lineOptions: {
+                  styles: [{
+                    color: '#3388ff',
+                    weight: 5
+                  }]
+                }
+              }).addTo(map);
+              
+              console.log('Route updated with new location');
+            }
+          }
+        }
+        
         // Start watching position
         startLocationWatch();
         
-        // Add periodic location refresh every 3 seconds as backup
+        // Add periodic location refresh every 10 seconds as backup (reduced frequency)
         setInterval(function() {
           if (navigator.geolocation && typeof currentLocation !== 'undefined') {
             navigator.geolocation.getCurrentPosition(
@@ -379,19 +427,25 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
                   };
                   console.log('Periodic location updated to:', currentLocation);
                   updateLocationMarker();
+                  updateActiveRoute();
                 }
               },
               function(error) {
-                console.log('Periodic location update failed:', error);
+                console.log('Periodic location update failed:', error.code, error.message);
+                // If geolocation fails due to security (HTTP), disable periodic updates
+                if (error.code === 1) {
+                  console.log('Periodic geolocation disabled due to security restrictions.');
+                  return;
+                }
               },
               {
-                enableHighAccuracy: true,
-                timeout: 3000,
-                maximumAge: 5000 // 5 seconds
+                enableHighAccuracy: false, // Reduced accuracy for better reliability
+                timeout: 10000, // Increased timeout
+                maximumAge: 30000 // 30 seconds cache
               }
             );
           }
-        }, 3000); // Update every 3 seconds
+        }, 10000); // Update every 10 seconds (reduced frequency)
       ''');
     } catch (e) {
       print('Error getting location: $e');
@@ -425,7 +479,7 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
                     map.setView([currentLocation.lat, currentLocation.lng], 15);
                     
                     // Add current location marker with same design
-                    L.marker([currentLocation.lat, currentLocation.lng], {
+                    currentLocationMarker = L.marker([currentLocation.lat, currentLocation.lng], {
                       icon: L.divIcon({
                         className: 'current-location-marker',
                         html: `
@@ -523,7 +577,7 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
         
         getCurrentLocationFallback();
         
-        // Add periodic location refresh every 3 seconds for fallback too
+        // Add periodic location refresh every 15 seconds for fallback (reduced frequency)
         setInterval(function() {
           if (navigator.geolocation && typeof currentLocation !== 'undefined') {
             navigator.geolocation.getCurrentPosition(
@@ -537,19 +591,25 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
                   };
                   console.log('Fallback periodic location updated to:', currentLocation);
                   updateLocationMarker();
+                  updateActiveRoute();
                 }
               },
               function(error) {
-                console.log('Fallback periodic location update failed:', error);
+                console.log('Fallback periodic location update failed:', error.code, error.message);
+                // If geolocation fails due to security (HTTP), disable fallback updates
+                if (error.code === 1) {
+                  console.log('Fallback geolocation disabled due to security restrictions.');
+                  return;
+                }
               },
               {
-                enableHighAccuracy: true,
-                timeout: 3000,
-                maximumAge: 5000 // 5 seconds
+                enableHighAccuracy: false, // Reduced accuracy for better reliability
+                timeout: 15000, // Increased timeout
+                maximumAge: 60000 // 1 minute cache
               }
             );
           }
-        }, 3000); // Update every 3 seconds
+        }, 15000); // Update every 15 seconds (reduced frequency)
       ''');
     }
   }

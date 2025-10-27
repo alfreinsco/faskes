@@ -69,10 +69,42 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success'] && data['data'] != null) {
-          final List<dynamic> faskesList = data['data']['data'] ?? data['data'];
-          return faskesList.map((json) => Faskes.fromJson(json)).toList();
+        print('API Response in getAllFaskes: $data'); // Debug log
+
+        List<dynamic> faskesList = [];
+
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('success') && data['success'] == true) {
+            // Laravel API format with success wrapper
+            if (data.containsKey('data')) {
+              final dataContent = data['data'];
+              if (dataContent is List) {
+                faskesList = dataContent;
+              } else if (dataContent is Map &&
+                  dataContent.containsKey('data')) {
+                faskesList = dataContent['data'] is List
+                    ? dataContent['data']
+                    : [];
+              }
+            }
+          } else if (data.containsKey('data')) {
+            // Direct data key
+            final dataContent = data['data'];
+            if (dataContent is List) {
+              faskesList = dataContent;
+            } else if (dataContent is Map) {
+              faskesList = [dataContent]; // Single object wrapped in list
+            }
+          } else {
+            // No data key, try to use response directly
+            faskesList = data is List ? data as List<dynamic> : [];
+          }
+        } else if (data is List) {
+          // Response is directly a list
+          faskesList = data;
         }
+
+        return faskesList.map((json) => Faskes.fromJson(json)).toList();
       }
       return [];
     } catch (e) {
