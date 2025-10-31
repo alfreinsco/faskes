@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/faskes.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://172.17.1.226:8001/api';
+  static const String baseUrl = 'http://10.34.195.143:8000/api';
 
   static Future<Map<String, dynamic>> getFaskes({
     String? search,

@@ -192,7 +192,7 @@ class _FlutterMapScreenState extends State<FlutterMapScreen> {
     try {
       // Replace with your Laravel API endpoint
       final response = await http.get(
-        Uri.parse('http://172.17.1.226:8001/api/faskes'),
+        Uri.parse('http://10.34.195.143:8000/api/faskes'),
       );
 
       if (response.statusCode == 200) {

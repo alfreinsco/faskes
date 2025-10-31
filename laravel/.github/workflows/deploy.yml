@@ -1,0 +1,39 @@
+name: 🚀 Auto Deploy Laravel to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/faskes/laravel || exit
+
+            echo "🌀 Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "📦 Installing dependencies..."
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            echo "⚙️ Running migrations..."
+            php artisan migrate --force
+
+            echo "🧹 Clearing caches..."
+            php artisan optimize:clear
+
+            echo "✅ Deployment finished successfully at $(date)"

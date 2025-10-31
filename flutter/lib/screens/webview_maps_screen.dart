@@ -50,7 +50,7 @@ class _WebViewMapsScreenState extends State<WebViewMapsScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('http://172.17.1.226:8001/maps'));
+      ..loadRequest(Uri.parse('http://10.34.195.143:8000/maps'));
   }
 
   void _enableGeolocation() async {
