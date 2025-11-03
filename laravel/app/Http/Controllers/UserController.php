@@ -124,6 +124,15 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
         ]);
 
+        if($request->email !== Auth::user()->email) {
+            return redirect()->back()
+                ->with('swal', [
+                    'title' => 'Error!',
+                    'text' => 'Anda tidak dapat mengubah email akun ini.',
+                    'icon' => 'error',
+                ]);
+        }
+
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
@@ -144,12 +153,22 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+
         // Prevent deleting own account
         if ($user->id === Auth::id()) {
-            return redirect()->route('users.index')
+            return redirect()->back()
                 ->with('swal', [
                     'title' => 'Error!',
                     'text' => 'Anda tidak dapat menghapus akun sendiri.',
+                    'icon' => 'error',
+                ]);
+        }
+
+        if($user->email !== Auth::user()->email) {
+            return redirect()->back()
+                ->with('swal', [
+                    'title' => 'Error!',
+                    'text' => 'Anda tidak dapat menghapus akun ini.',
                     'icon' => 'error',
                 ]);
         }

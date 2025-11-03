@@ -74,7 +74,7 @@
                     <div class="flex items-center space-x-3">
                         <div class="w-15 h-15 rounded-lg flex items-center justify-center">
                             <img src="{{ asset('img/logo-faskes-biru.png') }}" alt="Logo"
-                                class="w-full h-full object-contain" />
+                                class="w-full h-full object-contain rounded-full" />
                         </div>
                         <div>
                             <h2 class="text-lg font-bold">FASKES</h2>

@@ -15,7 +15,8 @@
             <!-- Header -->
             <div class="text-center">
                 <div class="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-cyan-600 text-white">
-                    <img src="{{ asset('img/logo-faskes-biru.png') }}" alt="Logo" class="w-full h-full object-contain">
+                    <img src="{{ asset('img/logo-faskes-biru.png') }}" alt="Logo"
+                        class="w-full h-full object-contain rounded-full">
                 </div>
                 <h2 class="mt-6 text-3xl font-extrabold text-base-content">
                     FASKES
