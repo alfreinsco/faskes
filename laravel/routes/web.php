@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AplikasiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RumahSakitController;
@@ -58,6 +59,8 @@ Route::middleware(['auth'])->group(function () {
         ->middleware(['permission:view permissions', 'permission:create permissions', 'permission:edit permissions', 'permission:delete permissions']);
     Route::get('permissions/bulk/create', [PermissionController::class, 'bulkCreate'])->name('permissions.bulk-create');
     Route::post('permissions/bulk/store', [PermissionController::class, 'bulkStore'])->name('permissions.bulk-store');
+
+    Route::get('aplikasi', [AplikasiController::class, 'index'])->name('aplikasi');
 });
 
 // Auth routes

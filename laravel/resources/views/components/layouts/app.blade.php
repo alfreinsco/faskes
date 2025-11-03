@@ -146,6 +146,16 @@
                             </li>
                         @endcan
 
+                        <!-- Relase App -->
+                        <li>
+                            <a href="{{ route('aplikasi') }}"
+                                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200 {{ request()->routeIs('release-app') ? 'bg-white/20 text-white' : 'text-cyan-100' }}">
+                                <i class="fas fa-download"></i>
+                                <span class="font-medium">Aplikasi Mobile</span>
+                            </a>
+                        </li>
+
+
                         {{-- @can('view roles')
                             <!-- Management Roles -->
                             <li>
