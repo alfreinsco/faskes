@@ -5,9 +5,7 @@ import '../widgets/faskes_card.dart';
 import '../widgets/search_bar_widget.dart';
 import '../widgets/filter_chips.dart';
 import '../widgets/stats_card.dart';
-import 'webview_maps_screen.dart';
-import 'flutter_map_screen.dart';
-import 'google_maps_advanced_screen.dart';
+import 'routing_maps_screen.dart';
 import 'faskes_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -55,64 +53,17 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.cyan[600],
         elevation: 0,
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.map, color: Colors.white),
-            onSelected: (String choice) {
-              if (choice == 'webview') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const WebViewMapsScreen(),
-                  ),
-                );
-              } else if (choice == 'flutter_map') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FlutterMapScreen(),
-                  ),
-                );
-              } else if (choice == 'google_maps') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const GoogleMapsAdvancedScreen(),
-                  ),
-                );
-              }
+          IconButton(
+            icon: const Icon(Icons.route, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RoutingMapsScreen(),
+                ),
+              );
             },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'google_maps',
-                child: Row(
-                  children: [
-                    Icon(Icons.map, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Google Maps'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'flutter_map',
-                child: Row(
-                  children: [
-                    Icon(Icons.map, color: Colors.blue),
-                    SizedBox(width: 8),
-                    Text('Flutter Map (Stabil)'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'webview',
-                child: Row(
-                  children: [
-                    Icon(Icons.web, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Text('WebView (Laravel)'),
-                  ],
-                ),
-              ),
-            ],
+            tooltip: 'Routing Maps',
           ),
         ],
       ),

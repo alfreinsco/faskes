@@ -73,7 +73,7 @@
                 <div class="p-6 border-b border-cyan-500">
                     <div class="flex items-center space-x-3">
                         <div class="w-15 h-15 rounded-lg flex items-center justify-center">
-                            <img src="{{ asset('img/logo-faskes.png') }}" alt="Logo"
+                            <img src="{{ asset('img/logo-faskes-biru.png') }}" alt="Logo"
                                 class="w-full h-full object-contain" />
                         </div>
                         <div>
