@@ -6,6 +6,7 @@ Sistem informasi terintegrasi untuk mengelola dan menampilkan data fasilitas kes
 
 - [Deskripsi](#deskripsi)
 - [Fitur Utama](#fitur-utama)
+- [Screenshots](#-screenshots)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Teknologi yang Digunakan](#teknologi-yang-digunakan)
 - [Struktur Proyek](#struktur-proyek)
@@ -31,22 +32,26 @@ Sistem ini dirancang untuk membantu pengguna menemukan fasilitas kesehatan terde
 ### Web Admin Panel (Laravel)
 
 - ✅ **Manajemen Fasilitas Kesehatan**
+
   - CRUD untuk Rumah Sakit, Puskesmas, dan Apotek
   - Upload gambar fasilitas
   - Manajemen layanan dan informasi kontak
   - Status aktif/non-aktif
 
 - ✅ **Dashboard & Statistik**
+
   - Statistik total faskes per tipe
   - Data visualisasi
   - Quick access ke modul utama
 
 - ✅ **Manajemen User & Role**
+
   - Role-based access control (RBAC)
   - Permission management
   - User management dengan Spatie Laravel Permission
 
 - ✅ **Peta Interaktif**
+
   - Peta dengan Leaflet.js
   - Marker untuk setiap fasilitas
   - Routing machine untuk navigasi
@@ -58,12 +63,14 @@ Sistem ini dirancang untuk membantu pengguna menemukan fasilitas kesehatan terde
 ### Mobile App (Flutter)
 
 - ✅ **Home Screen**
+
   - Dashboard dengan statistik faskes
   - Search dan filter berdasarkan tipe/status
   - List faskes dengan card design
   - Pull to refresh dan infinite scroll
 
 - ✅ **Map Screen**
+
   - Peta interaktif dengan Flutter Map
   - Custom markers per tipe faskes
   - Popup informasi detail
@@ -75,6 +82,106 @@ Sistem ini dirancang untuk membantu pengguna menemukan fasilitas kesehatan terde
   - Action buttons (call, email, website)
   - Daftar layanan
   - Koordinat lokasi
+
+## 📸 Screenshots
+
+### 🔐 Authentication
+
+![Halaman Login](screenshot/halaman login.png)
+
+### 📊 Dashboard
+
+![Dashboard](screenshot/screencapture-faskes-ambon-life-dashboard-2025-11-04-01_58_11.png)
+
+### 🏥 Rumah Sakit
+
+#### List Rumah Sakit
+
+![Rumah Sakit List](screenshot/screencapture-faskes-ambon-life-rumah-sakit-2025-11-04-01_58_41.png)
+
+#### Create Rumah Sakit
+
+![Rumah Sakit Create](screenshot/screencapture-faskes-ambon-life-rumah-sakit-create-2025-11-04-01_58_57.png)
+
+#### Edit Rumah Sakit
+
+![Rumah Sakit Edit](screenshot/screencapture-faskes-ambon-life-rumah-sakit-1-edit-2025-11-04-02_00_21.png)
+
+#### Detail Rumah Sakit
+
+![Rumah Sakit Detail](screenshot/screencapture-faskes-ambon-life-rumah-sakit-1-2025-11-04-02_00_35.png)
+
+### 🏥 Puskesmas
+
+#### List Puskesmas
+
+![Puskesmas List](screenshot/screencapture-faskes-ambon-life-puskesmas-2025-11-04-02_01_05.png)
+
+#### Create Puskesmas
+
+![Puskesmas Create](screenshot/screencapture-faskes-ambon-life-puskesmas-create-2025-11-04-02_01_17.png)
+
+#### Edit Puskesmas
+
+![Puskesmas Edit](screenshot/screencapture-faskes-ambon-life-puskesmas-4-edit-2025-11-04-02_01_32.png)
+
+#### Detail Puskesmas
+
+![Puskesmas Detail](screenshot/screencapture-faskes-ambon-life-puskesmas-4-2025-11-04-02_01_52.png)
+
+### 💊 Apotek
+
+#### List Apotek
+
+![Apotek List](screenshot/screencapture-faskes-ambon-life-apotek-2025-11-04-02_02_10.png)
+
+#### Create Apotek
+
+![Apotek Create](screenshot/screencapture-faskes-ambon-life-apotek-create-2025-11-04-02_02_23.png)
+
+#### Edit Apotek
+
+![Apotek Edit](screenshot/screencapture-faskes-ambon-life-apotek-7-edit-2025-11-04-02_02_38.png)
+
+#### Detail Apotek
+
+![Apotek Detail](screenshot/screencapture-faskes-ambon-life-apotek-7-2025-11-04-02_02_54.png)
+
+### 👥 User Management
+
+#### List Users
+
+![Users List](screenshot/screencapture-localhost-8000-users-2025-11-04-02_04_06.png)
+
+#### Create User
+
+![User Create](screenshot/screencapture-localhost-8000-users-create-2025-11-04-02_04_24.png)
+
+#### Edit User
+
+![User Edit](screenshot/screencapture-localhost-8000-users-1-edit-2025-11-04-02_04_39.png)
+
+#### User Detail
+
+![User Detail](screenshot/screencapture-localhost-8000-users-1-2025-11-04-02_04_49.png)
+
+#### Assign Roles
+
+![Assign Roles](screenshot/screencapture-localhost-8000-users-1-assign-roles-2025-11-04-02_05_02.png)
+
+#### Assign Permissions
+
+![Assign Permissions](screenshot/screencapture-localhost-8000-users-1-assign-permissions-2025-11-04-02_05_15.png)
+
+#### Change Password
+
+![Change Password](screenshot/screencapture-localhost-8000-users-1-change-password-2025-11-04-02_05_33.png)
+
+### 📱 Aplikasi Mobile
+
+#### Download APK
+
+![Download APK](screenshot/screencapture-localhost-8000-aplikasi-2025-11-04-02_05_45.png)
 
 ## 🏗️ Arsitektur Sistem
 
@@ -225,6 +332,7 @@ flutter pub get
 ### 4. Run Application
 
 **Backend (Laravel):**
+
 ```bash
 cd laravel
 php artisan serve
@@ -232,6 +340,7 @@ php artisan serve
 ```
 
 **Mobile App (Flutter):**
+
 ```bash
 cd flutter
 flutter run
@@ -270,6 +379,7 @@ static const String baseUrl = 'http://your-server.com/api';
 ```
 
 Untuk Android emulator, gunakan `10.0.2.2` untuk localhost:
+
 ```dart
 static const String baseUrl = 'http://10.0.2.2:8000/api';
 ```
@@ -352,6 +462,7 @@ php artisan migrate:fresh --seed
 ### Endpoints
 
 #### Get All Faskes
+
 ```
 GET /api/faskes
 Query Parameters:
@@ -362,23 +473,27 @@ Query Parameters:
 ```
 
 #### Get Faskes Detail
+
 ```
 GET /api/faskes/{id}
 ```
 
 #### Create Faskes (Admin Only)
+
 ```
 POST /api/faskes
 Body: JSON with faskes data
 ```
 
 #### Update Faskes (Admin Only)
+
 ```
 PUT /api/faskes/{id}
 Body: JSON with updated faskes data
 ```
 
 #### Delete Faskes (Admin Only)
+
 ```
 DELETE /api/faskes/{id}
 ```
@@ -426,20 +541,23 @@ flutter test
 ## 📝 Default Login
 
 **Super Admin:**
+
 - Email: `alfreinsco@gmail.com`
 - Password: `alfreinsco@gmail.com`
 
-*Ganti password setelah first login untuk keamanan*
+_Ganti password setelah first login untuk keamanan_
 
 ## 🗺️ Fitur Peta
 
 ### Web Admin
+
 - Peta interaktif dengan Leaflet.js
 - Marker untuk setiap fasilitas kesehatan
 - Routing machine untuk navigasi
 - Popup informasi saat klik marker
 
 ### Mobile App
+
 - Peta interaktif dengan Flutter Map
 - Custom markers berdasarkan tipe
 - Real-time location tracking
@@ -472,15 +590,18 @@ Copy APK ke `laravel/public/release/` untuk akses download melalui web admin.
 ### Backend Issues
 
 **Permission Error:**
+
 ```bash
 chmod -R 775 storage bootstrap/cache
 ```
 
 **Database Connection Error:**
+
 - Periksa konfigurasi database di `.env`
 - Pastikan MySQL service running
 
 **Asset Not Loading:**
+
 ```bash
 npm run build
 # atau
@@ -490,14 +611,17 @@ npm run dev
 ### Mobile App Issues
 
 **API Connection Error:**
+
 - Periksa URL API di `api_service.dart`
 - Pastikan backend server running
 - Untuk Android emulator, gunakan `10.0.2.2` bukan `localhost`
 
 **Location Permission:**
+
 - Pastikan permission sudah dikonfigurasi di `Info.plist` (iOS) dan `AndroidManifest.xml` (Android)
 
 **Build Error:**
+
 ```bash
 flutter clean
 flutter pub get
@@ -541,4 +665,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **FASKES** - Sistem Informasi Fasilitas Kesehatan | Made with ❤️
-
